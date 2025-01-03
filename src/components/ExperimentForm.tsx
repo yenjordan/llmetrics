@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,17 +25,17 @@ export function ExperimentForm() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ prompt, model }),
         });
-        
+
         const data = await response.json();
-        setResults(prev => ({
+        setResults((prev) => ({
           ...prev,
-          [model]: data
+          [model]: data,
         }));
       } catch (error) {
         console.error(`Error with ${model}:`, error);
-        setResults(prev => ({
+        setResults((prev) => ({
           ...prev,
-          [model]: { error: 'Failed to get response' }
+          [model]: { error: "Failed to get response" },
         }));
       }
     });
@@ -74,9 +74,32 @@ export function ExperimentForm() {
             <CardContent>
               {results[model] ? (
                 <>
-                  <p>{results[model].response}</p>
-                  <div className="mt-2 text-sm text-gray-600">
-                    <p>Response Time: {results[model].responseTime}s</p>
+                  <div className="mb-4">
+                    <h3 className="font-semibold mb-2">Response:</h3>
+                    <p className="text-sm">{results[model].response}</p>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-sm text-gray-600">
+                    <div>
+                      <p className="font-semibold">Response Time</p>
+                      <p>{results[model].responseTime.toFixed(2)}s</p>
+                    </div>
+                    <div>
+                      <p className="font-semibold">Total Tokens</p>
+                      <p>{results[model].metrics?.tokenCount || 0}</p>
+                    </div>
+                    <div>
+                      <p className="font-semibold">Prompt Tokens</p>
+                      <p>{results[model].metrics?.promptTokens || 0}</p>
+                    </div>
+                    <div>
+                      <p className="font-semibold">Completion Tokens</p>
+                      <p>{results[model].metrics?.completionTokens || 0}</p>
+                    </div>
+                    <div>
+                      <p className="font-semibold">Cost</p>
+                      <p>${results[model].metrics?.cost || 0}</p>
+                    </div>
                   </div>
                 </>
               ) : (

@@ -30,4 +30,8 @@ model Result {
   accuracy     Float?
   relevancy    Float?
   createdAt    DateTime   @default(now())
+  tokenCount       Int?
+  promptTokens     Int?
+  completionTokens Int?
+  cost             Float?
 }

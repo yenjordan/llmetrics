@@ -7,6 +7,16 @@ const prisma = new PrismaClient();
 const openai = new OpenAI({ apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY });
 const groq = new Groq({ apiKey: process.env.NEXT_PUBLIC_GROQ_API_KEY });
 
+const COST_PER_1K_TOKENS: Record<string, number> = {
+    "gpt-4": 0.03,
+    "llama-70b": 0.0001,
+    "mixtral": 0.0001,
+};
+
+function calculateTokenCost(model: string, tokenCount: number): number {
+    return (tokenCount / 1000) * (COST_PER_1K_TOKENS[model] || 0);
+}
+
 export async function POST(req: Request) {
     try {
       const { prompt, model } = await req.json();
@@ -16,7 +26,7 @@ export async function POST(req: Request) {
       
       if (model === 'gpt-4') {
         const response = await openai.chat.completions.create({
-          model: 'gpt-4o',
+          model: 'chatgpt-4o-latest',
           messages: [{ role: 'user', content: prompt }],
         });
         
@@ -24,6 +34,12 @@ export async function POST(req: Request) {
           modelName: 'gpt-4',
           response: response.choices[0].message.content,
           responseTime: (Date.now() - startTime) / 1000,
+          metrics: {
+            tokenCount: response.usage?.total_tokens || 0,
+            promptTokens: response.usage?.prompt_tokens || 0,
+            completionTokens: response.usage?.completion_tokens || 0,
+            cost: calculateTokenCost('gpt-4', response.usage?.total_tokens || 0)
+          }
         };
       } 
       else if (model === 'llama-70b') {
@@ -36,6 +52,12 @@ export async function POST(req: Request) {
           modelName: 'llama-70b',
           response: response.choices[0]?.message?.content,
           responseTime: (Date.now() - startTime) / 1000,
+          metrics: {
+            tokenCount: response.usage?.total_tokens || 0,
+            promptTokens: response.usage?.prompt_tokens || 0,
+            completionTokens: response.usage?.completion_tokens || 0,
+            cost: calculateTokenCost('llama-70b', response.usage?.total_tokens || 0)
+          }
         };
       }
       else if (model === 'mixtral') {
@@ -48,7 +70,17 @@ export async function POST(req: Request) {
           modelName: 'mixtral',
           response: response.choices[0]?.message?.content,
           responseTime: (Date.now() - startTime) / 1000,
+          metrics: {
+            tokenCount: response.usage?.total_tokens || 0,
+            promptTokens: response.usage?.prompt_tokens || 0,
+            completionTokens: response.usage?.completion_tokens || 0,
+            cost: calculateTokenCost('mixtral', response.usage?.total_tokens || 0)
+          }
         };
+      }
+
+      if (!result) {
+        throw new Error('No result generated');
       }
   
       // Store in database
@@ -56,7 +88,15 @@ export async function POST(req: Request) {
         data: {
           prompt,
           results: {
-            create: [result]
+            create: [{
+                modelName: result.modelName,
+                response: result.response,
+                responseTime: result.responseTime,
+                tokenCount: result.metrics.tokenCount,
+                promptTokens: result.metrics.promptTokens,
+                completionTokens: result.metrics.completionTokens,
+                cost: result.metrics.cost
+              }]
           }
         }
       });
