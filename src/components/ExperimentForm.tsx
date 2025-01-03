@@ -7,6 +7,30 @@ import { Textarea } from "@/components/ui/textarea";
 
 const MODELS = ["gpt-4", "llama-70b", "mixtral"];
 
+interface MarkdownTextFormatter {
+  (text: string): string;
+}
+
+const formatMarkdownText: MarkdownTextFormatter = (text) => {
+  if (!text) return "";
+
+  return text
+    .split("\n")
+    .map((paragraph) => {
+      let formatted = paragraph.replace(
+        /\*\*(.*?)\*\*/g,
+        '<span class="font-bold">$1</span>'
+      );
+      formatted = formatted.replace(
+        /\*(.*?)\*/g,
+        '<span class="italic">$1</span>'
+      );
+      return formatted;
+    })
+    .map((paragraph) => `<p class="mb-2">${paragraph}</p>`)
+    .join("");
+};
+
 export function ExperimentForm() {
   const [prompt, setPrompt] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -15,9 +39,8 @@ export function ExperimentForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setResults({}); // Clear previous results
+    setResults({});
 
-    // Create a request for each model
     const requests = MODELS.map(async (model) => {
       try {
         const response = await fetch("/api/evaluate", {
@@ -76,7 +99,12 @@ export function ExperimentForm() {
                 <>
                   <div className="mb-4">
                     <h3 className="font-semibold mb-2">Response:</h3>
-                    <p className="text-sm">{results[model].response}</p>
+                    <div
+                      className="text-sm"
+                      dangerouslySetInnerHTML={{
+                        __html: formatMarkdownText(results[model].response),
+                      }}
+                    />
                   </div>
 
                   <div className="grid grid-cols-2 gap-2 text-sm text-gray-600">
