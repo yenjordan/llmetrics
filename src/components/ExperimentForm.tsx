@@ -1,42 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 
-const MODELS = ["gpt-4", "llama-70b", "mixtral"];
+const MODELS = ["llama-70b", "mixtral"];
 
-interface MarkdownTextFormatter {
-  (text: string): string;
-}
-interface ResultType {
-  response: string;
-  responseTime: number;
-  metrics: {
-    tokenCount: number;
-    promptTokens: number;
-    completionTokens: number;
-    cost: number;
-  };
-}
-
-const formatMarkdownText: MarkdownTextFormatter = (text) => {
+const formatMarkdownText = (text: string) => {
   if (!text) return "";
-
   return text
     .split("\n")
-    .map((paragraph) => {
-      let formatted = paragraph.replace(
-        /\*\*(.*?)\*\*/g,
-        '<span class="font-bold">$1</span>'
-      );
-      formatted = formatted.replace(
-        /\*(.*?)\*/g,
-        '<span class="italic">$1</span>'
-      );
-      return formatted;
-    })
     .map((paragraph) => `<p class="mb-2">${paragraph}</p>`)
     .join("");
 };
@@ -79,34 +50,30 @@ export function ExperimentForm() {
 
   return (
     <div className="container mx-auto p-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Test Prompt</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <Textarea
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              placeholder="Enter your prompt here..."
-              className="min-h-[100px]"
-            />
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? "Processing..." : "Submit"}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+      <div className="form-control">
+        <label className="label">
+          <span className="label-text">Test Prompt</span>
+        </label>
+        <textarea
+          value={prompt}
+          onChange={(e) => setPrompt(e.target.value)}
+          placeholder="Enter your prompt here..."
+          className="textarea textarea-bordered min-h-[100px] bg-base-200 text-neutral-content"
+        />
+        <button className={`btn btn-primary ${isLoading ? "loading" : ""}`} onClick={handleSubmit}>
+          {isLoading ? "Processing..." : "Submit"}
+        </button>
+      </div>
 
-      <div className="mt-6 grid gap-4 md:grid-cols-3">
+      <div className="mt-6 grid gap-4 md:grid-cols-2">
         {MODELS.map((model) => (
-          <Card key={model}>
-            <CardHeader>
-              <CardTitle>{model}</CardTitle>
-            </CardHeader>
-            <CardContent>
+          <div key={model} className="card w-full bg-base-100 shadow-xl">
+            <div className="card-header">
+              <h2 className="card-title text-primary">{model}</h2>
+            </div>
+            <div className="card-body">
               {results[model]?.error ? (
-                <p className="text-red-500">{results[model].error}</p>
+                <p className="text-error">{results[model].error}</p>
               ) : results[model] ? (
                 <>
                   <div className="mb-4">
@@ -118,13 +85,10 @@ export function ExperimentForm() {
                       }}
                     />
                   </div>
-
-                  <div className="grid grid-cols-2 gap-2 text-sm text-gray-600">
+                  <div className="grid grid-cols-2 gap-2 text-sm text-neutral-content">
                     <div>
                       <p className="font-semibold">Response Time</p>
-                      <p>
-                        {results[model]?.responseTime?.toFixed(2) ?? "N/A"}s
-                      </p>
+                      <p>{results[model]?.responseTime?.toFixed(2) ?? "N/A"}s</p>
                     </div>
                     <div>
                       <p className="font-semibold">Total Tokens</p>
@@ -136,15 +100,11 @@ export function ExperimentForm() {
                     </div>
                     <div>
                       <p className="font-semibold">Completion Tokens</p>
-                      <p>
-                        {results[model]?.metrics?.completionTokens ?? "N/A"}
-                      </p>
+                      <p>{results[model]?.metrics?.completionTokens ?? "N/A"}</p>
                     </div>
                     <div>
                       <p className="font-semibold">Cost</p>
-                      <p>
-                        ${results[model]?.metrics?.cost?.toFixed(6) ?? "N/A"}
-                      </p>
+                      <p>${results[model]?.metrics?.cost?.toFixed(6) ?? "N/A"}</p>
                     </div>
                     <div>
                       <p className="font-semibold">Accuracy</p>
@@ -157,8 +117,8 @@ export function ExperimentForm() {
                   </div>
                 </>
               ) : null}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         ))}
       </div>
     </div>

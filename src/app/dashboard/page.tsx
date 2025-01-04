@@ -14,6 +14,8 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
 export default function DashboardPage() {
   const [analyticsData, setAnalyticsData] = useState({
@@ -29,81 +31,88 @@ export default function DashboardPage() {
   }, []);
 
   return (
-    <div className="container mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6">LLM Performance Analytics</h1>
+    <div className="flex flex-col min-h-screen bg-base-100">
+      <Navbar />
+      <div className="container mx-auto p-6">
+        <h1 className="text-3xl font-bold mb-6 flex items-center">
+          <img alt="LLMetrics Logo" src="/LLMetrics_logo.png" className="w-8 mr-2" />
+          LLM Performance Analytics
+        </h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Accuracy by Model</CardTitle>
-          </CardHeader>
-          <CardContent className="h-[400px]">
-            <AccuracyChart data={analyticsData.models} />
-          </CardContent>
-        </Card>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Accuracy by Model</CardTitle>
+            </CardHeader>
+            <CardContent className="h-[400px]">
+              <AccuracyChart data={analyticsData.models} />
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Relevancy Scores</CardTitle>
-          </CardHeader>
-          <CardContent className="h-[400px]">
-            <RelevancyChart data={analyticsData.models} />
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Relevancy Scores</CardTitle>
+            </CardHeader>
+            <CardContent className="h-[400px]">
+              <RelevancyChart data={analyticsData.models} />
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Response Times</CardTitle>
-          </CardHeader>
-          <CardContent className="h-[400px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={analyticsData.models}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="modelName" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Line
-                  type="monotone"
-                  dataKey="averageResponseTime"
-                  stroke="#ffc658"
-                  name="Response Time (s)"
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Response Times</CardTitle>
+            </CardHeader>
+            <CardContent className="h-[400px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={analyticsData.models}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="modelName" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Line
+                    type="monotone"
+                    dataKey="averageResponseTime"
+                    stroke="#ffc658"
+                    name="Response Time (s)"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Cost Analysis</CardTitle>
-          </CardHeader>
-          <CardContent className="h-[400px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={analyticsData.models}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="modelName" />
-                <YAxis />
-                <Tooltip
-                  formatter={(value) => {
-                    if (typeof value === "number") {
-                      return [`$${value.toFixed(6)}`, "Cost"];
-                    }
-                    return [value, "Cost"];
-                  }}
-                />
-                <Legend />
-                <Line
-                  type="monotone"
-                  dataKey="totalCost"
-                  stroke="#ff7300"
-                  name="Total Cost ($)"
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Cost Analysis</CardTitle>
+            </CardHeader>
+            <CardContent className="h-[400px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={analyticsData.models}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="modelName" />
+                  <YAxis />
+                  <Tooltip
+                    formatter={(value) => {
+                      if (typeof value === "number") {
+                        return [`$${value.toFixed(6)}`, "Cost"];
+                      }
+                      return [value, "Cost"];
+                    }}
+                  />
+                  <Legend />
+                  <Line
+                    type="monotone"
+                    dataKey="totalCost"
+                    stroke="#ff7300"
+                    name="Total Cost ($)"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </div>
       </div>
+      <Footer />
     </div>
   );
 }

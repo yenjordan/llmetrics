@@ -21,6 +21,10 @@ interface RelevancyChartProps {
 }
 
 export default function RelevancyChart({ data }: RelevancyChartProps) {
+  if (!data || !Array.isArray(data)) {
+    return <div>No data available</div>;
+  }
+
   const chartData = data.flatMap((model) =>
     model.responseHistory.map((history) => ({
       modelName: model.modelName,
